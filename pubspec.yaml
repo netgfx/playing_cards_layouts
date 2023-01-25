@@ -1,7 +1,7 @@
 name: playing_cards_layouts
-description: A new Flutter package project.
-version: 0.0.1
-homepage:
+description: A Dart library package to produce playing cards layouts
+version: 1.0.0
+homepage: https://github.com/netgfx/playing_cards_layouts
 
 environment:
   sdk: '>=2.18.1 <3.0.0'

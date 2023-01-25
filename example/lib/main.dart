@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:example/card_builder.dart';
@@ -57,8 +58,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late AnimationController _controller;
   BoxConstraints? viewportConstraints;
-  List<Map<String, dynamic>> cards = [];
-
+  List<Map<String, dynamic>> flowCards = [];
+  List<Map<String, dynamic>> blockCards = [];
+  List<Map<String, dynamic>> columnCards = [];
+  double visible = 0.0;
   @override
   void initState() {
     super.initState();
@@ -66,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1));
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      _controller.repeat();
+      //_controller.repeat();
       generateCards();
     });
   }
@@ -79,32 +82,231 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   /// Generate the maze
   void generateCards() {
-    //print('generate maze executed in ${stopwatch.elapsed}');
     for (int i = 0; i < 5; i++) {
-      cards.add({
+      flowCards.add({
         "color": Color.fromARGB(255, Colors.purple.red, Colors.purple.green, Colors.purple.blue),
         "id": UniqueKey().toString(),
-        "width": 80,
-        "height": 120,
+        "width": 80.0,
+        "height": 120.0,
+      });
+
+      blockCards.add({
+        "color": Color.fromARGB(255, Colors.blue.red, Colors.blue.green, Colors.blue.blue),
+        "id": UniqueKey().toString(),
+        "width": 80.0,
+        "height": 120.0,
+      });
+
+      columnCards.add({
+        "color": Color.fromARGB(255, Colors.green.red, Colors.green.green, Colors.green.blue),
+        "id": UniqueKey().toString(),
+        "width": 80.0,
+        "height": 120.0,
       });
     }
 
-    var _cards = fanCards(cards, {
+    List<Map<String, dynamic>> _cards = fanCards(flowCards, {
       "flow": "horizontal", // The layout direction (horizontal or vertical)
       "fanDirection": "N",
       "imagesUrl": "cards/",
       "spacing": 0.6,
-      "radius": 200,
-      "width": 80,
+      "radius": 200.0,
+      "width": 80.0,
     });
 
-    print(_cards);
-    cards.clear();
-    cards = _cards;
+    List<Map<String, dynamic>> _handCards = handCards(blockCards, {
+      "flow": "horizontal",
+      "spacing": -0.2,
+      "width": 80.0,
+    });
+
+    List<Map<String, dynamic>> _columnCards = handCards(columnCards, {
+      "flow": "vertical",
+      "spacing": -0.2,
+      "width": 80.0,
+      "height": 120.0,
+    });
+
+    flowCards.clear();
+    blockCards.clear();
+    columnCards.clear();
+    setState(() {
+      flowCards = _cards;
+      blockCards = _handCards;
+      columnCards = _columnCards;
+    });
+  }
+
+  List<Widget> getCards(List<Map<String, dynamic>> sourceCards, String mode) {
+    List<Widget> cards = [];
+    cards.add(Container());
+    int counter = 0;
+    for (var card in sourceCards) {
+      double? angle = card["coords"]["angle"];
+      if (angle != null) {
+        angle = (angle - 90) * (pi / 180);
+      }
+
+      cards.add(
+        Positioned(
+          left: card["coords"]["x"].toDouble(),
+          top: card["coords"]["y"].toDouble(),
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTapDown: (details) => onTap(context, details, mode),
+            child: AbsorbPointer(
+              child: Transform.translate(
+                offset: const Offset(0, 0),
+                child: Transform.rotate(
+                  angle: angle ?? 0.0,
+                  child: FadeTransition(
+                    opacity: animateOpacity(counter),
+                    child: Container(
+                      height: card["card"]["height"],
+                      width: card["card"]["width"],
+                      color: Colors.transparent,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: card["card"]["color"],
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10.0),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.19),
+                              spreadRadius: 4,
+                              blurRadius: 6,
+                              offset: Offset(0, 3), // changes position of shadow
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      counter += 1;
+    }
+
+    return cards;
   }
 
   void randomize() {
     generateCards();
+  }
+
+  void onTap(BuildContext context, TapDownDetails details, String mode) {
+    // find the card
+    var card = mode == "horizontal" ? blockCards : columnCards;
+    double dx = details.globalPosition.dx - 100;
+    double dy = details.globalPosition.dy;
+
+    if (mode == "vertical") {
+      dx = details.globalPosition.dx - 100;
+      dy = details.globalPosition.dy - 600;
+    }
+
+    var cardWidth = card[0]["card"]["width"];
+    var cardHeight = card[0]["card"]["height"];
+    var offsetX = cardWidth * 0.2;
+    var offsetY = cardHeight * 0.2;
+    var indexX = (dx / (cardWidth - offsetX)).floor();
+    var indexY = (dy / (cardHeight - offsetY)).floor();
+    if (indexX >= card.length) {
+      indexX = card.length - 1;
+    }
+    if (indexX < 0) {
+      indexX = 0;
+    }
+
+    if (indexY >= card.length) {
+      indexY = card.length - 1;
+    }
+    if (indexY < 0) {
+      indexY = 0;
+    }
+
+    if (mode == "horizontal" || mode == "horizontal_rotated") {
+      animateCard(indexX, () => {setState(() => {})}, mode);
+    } else {
+      animateCard(indexY, () => {setState(() => {})}, mode);
+    }
+  }
+
+  Animation<double> animateOpacity(int index) {
+    AnimationController controller = AnimationController(duration: const Duration(milliseconds: 1000), vsync: this);
+    Animation<double> tween = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Interval(
+        0.1 * index,
+        1.0,
+        curve: Curves.ease,
+      ),
+    ));
+
+    tween.addListener(() => {
+          //setState(() => {}),
+        });
+
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      _controller.forward();
+    });
+
+    return tween;
+  }
+
+  // animate the card
+  void animateCard(int cardIndex, Function updateFn, String mode) {
+    var card = mode == "horizontal" ? blockCards[cardIndex] : columnCards[cardIndex];
+    if (mode == "horizontal_rotated") {
+      card = flowCards[cardIndex];
+    }
+    var currentY = card["coords"]["y"];
+    var currentX = card["coords"]["x"];
+    var from = 0;
+    var to = -10;
+
+    if (mode == "horizontal" || mode == "horizontal_rotated") {
+      from = 0;
+      to = -10;
+    }
+
+    if (currentY < 0) {
+      from = currentY;
+      to = 0;
+    }
+
+    if (mode == "vertical") {
+      from = 0;
+      to = 10;
+
+      if (currentX > 0) {
+        from = currentX;
+        to = 0;
+      }
+    }
+
+    AnimationController controller = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
+    final Animation<double> curve = CurvedAnimation(parent: controller, curve: Curves.easeOut);
+    Animation<int> tween = IntTween(begin: from, end: to).animate(curve);
+
+    tween.addListener(() => {
+          if (mode == "horizontal" || mode == "horizontal_rotated")
+            {
+              card["coords"]["y"] = tween.value,
+            }
+          else
+            {
+              card["coords"]["x"] = tween.value,
+            },
+          updateFn(),
+        });
+    controller.forward();
   }
 
   @override
@@ -141,22 +343,56 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             Positioned(
               top: 100,
               left: 100,
-              child: Transform.translate(
-                  offset: const Offset(0, 0),
-                  child: RepaintBoundary(
-                      child: CustomPaint(
-                    size: const ui.Size(200, 400),
-                    key: UniqueKey(),
-                    isComplex: true,
-                    painter: CardBuilder(
-                      controller: _controller,
-                      cards: cards,
-                      //solution: this.mazeSolution,
-                      // width: viewportConstraints.maxWidth,
-                      // height: viewportConstraints.maxHeight,
-                    ),
-                    child: Container(constraints: BoxConstraints(maxWidth: viewportConstraints.maxWidth, maxHeight: viewportConstraints.maxHeight)),
-                  ))),
+              child: SizedBox(
+                width: flowCards.length * 80,
+                height: 300,
+                child: Stack(
+                  fit: StackFit.passthrough,
+                  clipBehavior: Clip.none,
+                  children: getCards(flowCards, "horizontal_rotated"),
+                ),
+              ),
+              // Transform.translate(
+              //     offset: const Offset(0, 0),
+              //     child: CustomPaint(
+              //       size: const ui.Size(200, 400),
+              //       key: UniqueKey(),
+              //       isComplex: true,
+              //       painter: CardBuilder(
+              //         controller: _controller,
+              //         cards: flowCards,
+              //         //solution: this.mazeSolution,
+              //         // width: viewportConstraints.maxWidth,
+              //         // height: viewportConstraints.maxHeight,
+              //       ),
+              //       child: Container(constraints: BoxConstraints(maxWidth: viewportConstraints.maxWidth, maxHeight: viewportConstraints.maxHeight)),
+              //     )),
+            ),
+            Positioned(
+              top: 400,
+              left: 100,
+              child: SizedBox(
+                width: blockCards.length * 80,
+                height: 120,
+                child: Stack(
+                  fit: StackFit.passthrough,
+                  clipBehavior: Clip.none,
+                  children: getCards(blockCards, "horizontal"),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 600,
+              left: 100,
+              child: SizedBox(
+                width: 80,
+                height: columnCards.length * 120,
+                child: Stack(
+                  fit: StackFit.passthrough,
+                  clipBehavior: Clip.none,
+                  children: getCards(columnCards, "vertical"),
+                ),
+              ),
             ),
             Positioned(
               top: viewportConstraints.maxHeight - 100,

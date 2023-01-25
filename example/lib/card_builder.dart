@@ -15,6 +15,7 @@ class CardBuilder extends CustomPainter {
   double width = 100;
   double height = 100;
   double _radius = 10;
+  Color shadowColor = Color.fromRGBO(0, 0, 0, 0.3);
   Function? update;
   Paint _paint = Paint();
   ui.BlendMode? blendMode = ui.BlendMode.src;
@@ -31,6 +32,7 @@ class CardBuilder extends CustomPainter {
     /// <-- The delay until the animation starts
     required this.cards,
     radius,
+    shadowColor,
 
     /// <-- The particles blend mode (default: BlendMode.src)
     blendMode,
@@ -47,6 +49,7 @@ class CardBuilder extends CustomPainter {
 
     _radius = radius ?? 10.0;
     _blendMode = blendMode ?? BlendMode.dstATop;
+    this.shadowColor = shadowColor ?? Color.fromRGBO(0, 0, 0, 0.3);
   }
 
   @override
@@ -87,30 +90,36 @@ class CardBuilder extends CustomPainter {
 
         _paint.color = card["card"]["color"];
         Paint shadowPaint = Paint()
-          ..color = Colors.black.withOpacity(0.2)
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 6);
+          ..color = shadowColor
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 20);
         /////////////////////////////////
-        final double r = sqrt(80 * 80 + 120 * 120) / 2;
-        final alpha = atan(120 / 80);
-        final beta = alpha + card["coords"]["angle"] * (pi / 180);
-        final shiftY = r * sin(beta);
-        final shiftX = r * cos(beta);
-        final translateX = 80 / 2 - shiftX;
-        final translateY = 120 / 2 - shiftY;
-
+        double angle = 0;
+        double translateX = 0.0;
+        double translateY = 0.0;
+        double cardWidth = card["card"]["width"];
+        double cardHeight = card["card"]["height"];
+        if (card["coords"]["angle"] != null) {
+          angle = card["coords"]["angle"].toDouble();
+          final double r = sqrt(cardWidth * cardWidth + cardHeight * cardHeight) / 2;
+          final alpha = atan(cardHeight / cardWidth);
+          final beta = alpha + angle * (pi / 180);
+          final shiftY = r * sin(beta);
+          final shiftX = r * cos(beta);
+          translateX = cardWidth / 2 - shiftX;
+          translateY = cardHeight / 2 - shiftY;
+        }
         //
-        updateCanvas(canvas!, card["coords"]["x"] + translateX, card["coords"]["y"] + translateY, card["coords"]["angle"] * (pi / 180), () {
+        updateCanvas(canvas!, card["coords"]["x"] + translateX, card["coords"]["y"] + translateY, angle * (pi / 180), () {
           //path = Path();
 
-          Rect rectS = Rect.fromLTWH(0, 0, card["card"]["width"], card["card"]["height"]);
+          // add shadow
+          Rect rectS = Rect.fromLTWH(0, 6, card["card"]["width"].toDouble(), card["card"]["height"].toDouble());
           canvas!.drawRRect(RRect.fromRectAndRadius(rectS, Radius.circular(_radius)), shadowPaint);
 
-          Rect rect = Rect.fromLTWH(0, 0, card["card"]["width"], card["card"]["height"]);
+          Rect rect = Rect.fromLTWH(0, 0, card["card"]["width"].toDouble(), card["card"]["height"].toDouble());
           path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(_radius)));
           canvas!.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(_radius)), _paint);
           //
-
-          //canvas!.drawShadow(path, Color(0xff000000), 3, false);
         }, translate: true);
       }
     }

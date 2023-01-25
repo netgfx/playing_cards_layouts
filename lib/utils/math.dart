@@ -1,27 +1,27 @@
 import 'dart:math';
 
-degreesToRadians(double degrees) {
+double degreesToRadians(double degrees) {
   return degrees * (pi / 180);
 }
 
-radiansToDegrees(double radians) {
+double radiansToDegrees(double radians) {
   return radians * (180 / pi);
 }
 
 List<double> getRotatedDimensions(
-  double angle_in_degrees,
+  double angleInDegrees,
   double width,
   double height,
 ) {
-  double angle = angle_in_degrees * pi / 180;
-  double _sin = sin(angle);
-  double _cos = cos(angle);
-  double x1 = _cos * width;
-  double y1 = _sin * width;
-  double x2 = -_sin * height;
-  double y2 = _cos * height;
-  double x3 = _cos * width - _sin * height;
-  double y3 = _sin * width + _cos * height;
+  double angle = angleInDegrees * pi / 180;
+  double sinValue = sin(angle);
+  double cosValue = cos(angle);
+  double x1 = cosValue * width;
+  double y1 = sinValue * width;
+  double x2 = -sinValue * height;
+  double y2 = cosValue * height;
+  double x3 = cosValue * width - sinValue * height;
+  double y3 = sinValue * width + cosValue * height;
   List<double> sortX = <double>[0.0, x1, x2, x3];
   sortX.sort();
   List<double> sortY = <double>[0.0, y1, y2, y3];
@@ -41,13 +41,13 @@ List<double> rotatePointInBox(
   double width,
   double height,
 ) {
-  double _angle = degreesToRadians(angle);
+  double angleValue = degreesToRadians(angle);
   double centerX = width / 2.0;
   double centerY = height / 2.0;
   double dx = x - centerX;
   double dy = y - centerY;
   double dist = sqrt(dx * dx + dy * dy);
-  double a = atan2(dy, dx) + _angle;
+  double a = atan2(dy, dx) + angleValue;
   double dx2 = cos(a) * dist;
   double dy2 = sin(a) * dist;
 
@@ -70,9 +70,9 @@ List<Map<String, dynamic>> calculateCoords(
   double maxX = -minX;
   double maxY = -minY;
   for (i = 0; i < numCards; i++) {
-    var degrees = startAngle + anglePerCard * i;
+    double degrees = startAngle + anglePerCard * i;
 
-    var radians = degreesToRadians(degrees);
+    double radians = degreesToRadians(degrees);
     var x = cardWidth / 2 + cos(radians) * arcRadius;
     var y = cardHeight / 2 + sin(radians) * arcRadius;
 
@@ -81,8 +81,7 @@ List<Map<String, dynamic>> calculateCoords(
     maxX = max(maxX, x);
     maxY = max(maxY, y);
 
-    print("$minX $minY $maxX $maxY ${degrees + 90}");
-    coords.add({"x": x, "y": y, "angle": degrees + 90});
+    coords.add({"x": x, "y": y, "angle": degrees});
   }
 
   List<double> rotatedDimensions = getRotatedDimensions(coords[0]["angle"], cardWidth, cardHeight);
@@ -117,12 +116,12 @@ List<Map<String, dynamic>> calculateCoords(
 
   for (int i = 0; i < coords.length; i++) {
     coords[i]["x"] += offsetX;
-    coords[i]["x"] = (coords[i]["x"]).round();
+    coords[i]["x"] = (coords[i]["x"]);
 
     coords[i]["y"] += offsetY;
-    coords[i]["y"] = (coords[i]["y"]).round();
+    coords[i]["y"] = (coords[i]["y"]);
 
-    coords[i]["angle"] = (coords[i]["angle"]).round();
+    coords[i]["angle"] = coords[i]["angle"];
   }
 
   box["width"] = coords[numCards - 1]["x"] + cardWidth;
