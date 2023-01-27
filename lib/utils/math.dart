@@ -55,9 +55,16 @@ List<double> rotatePointInBox(
 }
 
 List<Map<String, dynamic>> calculateCoords(
-    int numCards, double arcRadius, double cardWidth, double cardHeight, String direction, double cardSpacing, Map<String, dynamic> box) {
+    int numCards,
+    double arcRadius,
+    double cardWidth,
+    double cardHeight,
+    String direction,
+    double cardSpacing,
+    Map<String, dynamic> box) {
   // The separation between the cards, in terms of rotation around the circle's origin
-  var anglePerCard = radiansToDegrees(atan((cardWidth * cardSpacing) / arcRadius));
+  var anglePerCard =
+      radiansToDegrees(atan((cardWidth * cardSpacing) / arcRadius));
   String directionOption = direction.toUpperCase();
   int angleOffset = {"N": 270, "S": 90, "E": 0, "W": 180}[directionOption]!;
 
@@ -84,7 +91,8 @@ List<Map<String, dynamic>> calculateCoords(
     coords.add({"x": x, "y": y, "angle": degrees});
   }
 
-  List<double> rotatedDimensions = getRotatedDimensions(coords[0]["angle"], cardWidth, cardHeight);
+  List<double> rotatedDimensions =
+      getRotatedDimensions(coords[0]["angle"], cardWidth, cardHeight);
 
   double offsetX = 0.0;
   double offsetY = 0.0;
@@ -104,13 +112,15 @@ List<Map<String, dynamic>> calculateCoords(
     offsetY += (rotatedDimensions[1] - cardHeight) / 2;
 
     offsetX = minX * -1;
-    offsetX += cardHeight - rotatePointInBox(0, 0, 270, cardWidth, cardHeight)[1];
+    offsetX +=
+        cardHeight - rotatePointInBox(0, 0, 270, cardWidth, cardHeight)[1];
   } else if (directionOption == "E") {
     offsetY = minY * -1;
     offsetY += (rotatedDimensions[1] - cardHeight) / 2;
 
     offsetX = arcRadius * -1;
-    offsetX -= cardHeight - rotatePointInBox(0, 0, 270, cardWidth, cardHeight)[1];
+    offsetX -=
+        cardHeight - rotatePointInBox(0, 0, 270, cardWidth, cardHeight)[1];
     //offsetX -= ?????;    // HELP! Needs to line up with yellow line!
   }
 

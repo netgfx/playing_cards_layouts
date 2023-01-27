@@ -100,7 +100,8 @@ class CardBuilder extends CustomPainter {
         double cardHeight = card["card"]["height"];
         if (card["coords"]["angle"] != null) {
           angle = card["coords"]["angle"].toDouble();
-          final double r = sqrt(cardWidth * cardWidth + cardHeight * cardHeight) / 2;
+          final double r =
+              sqrt(cardWidth * cardWidth + cardHeight * cardHeight) / 2;
           final alpha = atan(cardHeight / cardWidth);
           final beta = alpha + angle * (pi / 180);
           final shiftY = r * sin(beta);
@@ -109,23 +110,32 @@ class CardBuilder extends CustomPainter {
           translateY = cardHeight / 2 - shiftY;
         }
         //
-        updateCanvas(canvas!, card["coords"]["x"] + translateX, card["coords"]["y"] + translateY, angle * (pi / 180), () {
+        updateCanvas(canvas!, card["coords"]["x"] + translateX,
+            card["coords"]["y"] + translateY, angle * (pi / 180), () {
           //path = Path();
 
           // add shadow
-          Rect rectS = Rect.fromLTWH(0, 6, card["card"]["width"].toDouble(), card["card"]["height"].toDouble());
-          canvas!.drawRRect(RRect.fromRectAndRadius(rectS, Radius.circular(_radius)), shadowPaint);
+          Rect rectS = Rect.fromLTWH(0, 6, card["card"]["width"].toDouble(),
+              card["card"]["height"].toDouble());
+          canvas!.drawRRect(
+              RRect.fromRectAndRadius(rectS, Radius.circular(_radius)),
+              shadowPaint);
 
-          Rect rect = Rect.fromLTWH(0, 0, card["card"]["width"].toDouble(), card["card"]["height"].toDouble());
-          path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(_radius)));
-          canvas!.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(_radius)), _paint);
+          Rect rect = Rect.fromLTWH(0, 0, card["card"]["width"].toDouble(),
+              card["card"]["height"].toDouble());
+          path.addRRect(
+              RRect.fromRectAndRadius(rect, Radius.circular(_radius)));
+          canvas!.drawRRect(
+              RRect.fromRectAndRadius(rect, Radius.circular(_radius)), _paint);
           //
         }, translate: true);
       }
     }
   }
 
-  void updateCanvas(Canvas canvas, double? x, double? y, double? rotate, VoidCallback callback, {bool translate = false}) {
+  void updateCanvas(Canvas canvas, double? x, double? y, double? rotate,
+      VoidCallback callback,
+      {bool translate = false}) {
     double _x = x ?? 0;
     double _y = y ?? 0;
 

@@ -1,6 +1,6 @@
 name: playing_cards_layouts
 description: A Dart library package to produce playing cards layouts
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/netgfx/playing_cards_layouts
 
 environment:

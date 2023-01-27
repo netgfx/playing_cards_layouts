@@ -66,7 +66,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
       //_controller.repeat();
@@ -84,21 +85,24 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   void generateCards() {
     for (int i = 0; i < 5; i++) {
       flowCards.add({
-        "color": Color.fromARGB(255, Colors.purple.red, Colors.purple.green, Colors.purple.blue),
+        "color": Color.fromARGB(
+            255, Colors.purple.red, Colors.purple.green, Colors.purple.blue),
         "id": UniqueKey().toString(),
         "width": 80.0,
         "height": 120.0,
       });
 
       blockCards.add({
-        "color": Color.fromARGB(255, Colors.blue.red, Colors.blue.green, Colors.blue.blue),
+        "color": Color.fromARGB(
+            255, Colors.blue.red, Colors.blue.green, Colors.blue.blue),
         "id": UniqueKey().toString(),
         "width": 80.0,
         "height": 120.0,
       });
 
       columnCards.add({
-        "color": Color.fromARGB(255, Colors.green.red, Colors.green.green, Colors.green.blue),
+        "color": Color.fromARGB(
+            255, Colors.green.red, Colors.green.green, Colors.green.blue),
         "id": UniqueKey().toString(),
         "width": 80.0,
         "height": 120.0,
@@ -176,7 +180,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                               color: Colors.black.withOpacity(0.19),
                               spreadRadius: 4,
                               blurRadius: 6,
-                              offset: Offset(0, 3), // changes position of shadow
+                              offset:
+                                  Offset(0, 3), // changes position of shadow
                             ),
                           ],
                         ),
@@ -200,7 +205,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     generateCards();
   }
 
-  void onTap(BuildContext context, TapDownDetails details, String mode, int index) {
+  void onTap(
+      BuildContext context, TapDownDetails details, String mode, int index) {
     // find the card
     var card = mode == "horizontal" ? blockCards : columnCards;
     double dx = details.globalPosition.dx - 100;
@@ -245,8 +251,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   Animation<double> animateOpacity(int index) {
-    AnimationController controller = AnimationController(duration: const Duration(milliseconds: 1000), vsync: this);
-    Animation<double> tween = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+    AnimationController controller = AnimationController(
+        duration: const Duration(milliseconds: 1000), vsync: this);
+    Animation<double> tween =
+        Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
       parent: _controller,
       curve: Interval(
         0.1 * index,
@@ -315,8 +323,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       }
     }
 
-    AnimationController controller = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
-    final Animation<double> curve = CurvedAnimation(parent: controller, curve: Curves.easeOut);
+    AnimationController controller = AnimationController(
+        duration: const Duration(milliseconds: 100), vsync: this);
+    final Animation<double> curve =
+        CurvedAnimation(parent: controller, curve: Curves.easeOut);
     Animation<double> tween = Tween(begin: from, end: to).animate(curve);
 
     tween.addListener(() => {
@@ -347,7 +357,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           padding: const EdgeInsets.all(8.0),
           child: Container(
               padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(50.0), color: const ui.Color.fromARGB(255, 0, 0, 0)),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50.0),
+                  color: const ui.Color.fromARGB(255, 0, 0, 0)),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -361,7 +373,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 ),
               )),
         ),
-        body: LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
+        body: LayoutBuilder(builder:
+            (BuildContext context, BoxConstraints viewportConstraints) {
           this.viewportConstraints = viewportConstraints;
           return Stack(children: [
             Positioned(
