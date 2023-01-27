@@ -11,11 +11,9 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A Dart package that given an array of sized objects can return a card layout between three variations `horizontal, vertical and fan (rotated horizontal)`.
 
-## Features
-
+Example includes solution to be used via Flutter and via CustomPainter. The package is only responsible for delivering a List of coordinates and angle for each card, the presentation is up to the developer using the package.
 
 
 ## Getting started

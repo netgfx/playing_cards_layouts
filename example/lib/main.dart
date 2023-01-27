@@ -107,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
     List<Map<String, dynamic>> _cards = fanCards(flowCards, {
       "flow": "horizontal", // The layout direction (horizontal or vertical)
-      "fanDirection": "N",
+      "fanDirection": "n",
       "imagesUrl": "cards/",
       "spacing": 0.6,
       "radius": 200.0,
@@ -141,19 +141,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     List<Widget> cards = [];
     cards.add(Container());
     int counter = 0;
-    for (var card in sourceCards) {
-      double? angle = card["coords"]["angle"];
+    sourceCards.asMap().forEach((key, value) {
+      double? angle = value["coords"]["angle"];
       if (angle != null) {
         angle = (angle - 90) * (pi / 180);
       }
 
       cards.add(
         Positioned(
-          left: card["coords"]["x"].toDouble(),
-          top: card["coords"]["y"].toDouble(),
+          left: value["coords"]["x"].toDouble(),
+          top: value["coords"]["y"].toDouble(),
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTapDown: (details) => onTap(context, details, mode),
+            onTapDown: (details) => onTap(context, details, mode, key),
             child: AbsorbPointer(
               child: Transform.translate(
                 offset: const Offset(0, 0),
@@ -162,12 +162,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   child: FadeTransition(
                     opacity: animateOpacity(counter),
                     child: Container(
-                      height: card["card"]["height"],
-                      width: card["card"]["width"],
+                      height: value["card"]["height"],
+                      width: value["card"]["width"],
                       color: Colors.transparent,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: card["card"]["color"],
+                          color: value["card"]["color"],
                           borderRadius: BorderRadius.all(
                             Radius.circular(10.0),
                           ),
@@ -191,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       );
 
       counter += 1;
-    }
+    });
 
     return cards;
   }
@@ -200,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     generateCards();
   }
 
-  void onTap(BuildContext context, TapDownDetails details, String mode) {
+  void onTap(BuildContext context, TapDownDetails details, String mode, int index) {
     // find the card
     var card = mode == "horizontal" ? blockCards : columnCards;
     double dx = details.globalPosition.dx - 100;
@@ -217,6 +217,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     var offsetY = cardHeight * 0.2;
     var indexX = (dx / (cardWidth - offsetX)).floor();
     var indexY = (dy / (cardHeight - offsetY)).floor();
+
+    // small quality of life enhancement
+    if (mode == "horizontal_rotated") {
+      indexX = index;
+    }
+
     if (indexX >= card.length) {
       indexX = card.length - 1;
     }
@@ -262,23 +268,41 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   // animate the card
   void animateCard(int cardIndex, Function updateFn, String mode) {
-    var card = mode == "horizontal" ? blockCards[cardIndex] : columnCards[cardIndex];
+    var card = mode == "horizontal"
+        ? blockCards[cardIndex]
+        : mode == "horizontal_rotated"
+            ? flowCards[cardIndex]
+            : columnCards[cardIndex];
     if (mode == "horizontal_rotated") {
       card = flowCards[cardIndex];
     }
     var currentY = card["coords"]["y"];
     var currentX = card["coords"]["x"];
-    var from = 0;
-    var to = -10;
+    double from = 0;
+    double to = -10;
 
-    if (mode == "horizontal" || mode == "horizontal_rotated") {
+    if (mode == "horizontal") {
       from = 0;
       to = -10;
+    }
+
+    if (mode == "horizontal_rotated") {
+      if (card["coords"]["originalY"] == null) {
+        card["coords"]["originalY"] = card["coords"]["y"];
+      }
+      from = card["coords"]["y"];
+      to = (card["coords"]["y"] - 10);
     }
 
     if (currentY < 0) {
       from = currentY;
       to = 0;
+    }
+
+    if (mode == "horizontal_rotated") {
+      if (currentY != card["coords"]["originalY"]) {
+        to = card["coords"]["originalY"];
+      }
     }
 
     if (mode == "vertical") {
@@ -293,7 +317,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
     AnimationController controller = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
     final Animation<double> curve = CurvedAnimation(parent: controller, curve: Curves.easeOut);
-    Animation<int> tween = IntTween(begin: from, end: to).animate(curve);
+    Animation<double> tween = Tween(begin: from, end: to).animate(curve);
 
     tween.addListener(() => {
           if (mode == "horizontal" || mode == "horizontal_rotated")
