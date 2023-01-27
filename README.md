@@ -15,6 +15,9 @@ A Dart package that given an array of sized objects can return a card layout bet
 
 Example includes solution to be used via Flutter and via CustomPainter. The package is only responsible for delivering a List of coordinates and angle for each card, the presentation is up to the developer using the package.
 
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/864248/215085645-efacbb87-124b-4b20-bf36-55c722b5dbf7.gif)
+
+---
 
 ## Getting started
 
